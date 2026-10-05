@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BuddyBrain — Private Open-Source AI Companion for ADHD & Focus</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+              800: '#166534',
+              900: '#14532d'
+            },
+            accent: {
+              500: '#6366f1',
+              600: '#4f46e5'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <style>
+    .glass-card {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(229, 231, 235, 0.8);
+    }
+    .dark .glass-card {
+      background: rgba(30, 41, 59, 0.85);
+      border-color: rgba(51, 65, 85, 0.8);
+    }
+    .pulse-subtle {
+      animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen font-sans transition-colors duration-200">
+  
+  <!-- Navigation Header -->
+  <header class="sticky top-0 z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-500 to-emerald-400 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
+          <i class="ph ph-brain text-2xl"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-emerald-600 to-teal-500 dark:from-emerald-400 dark:to-teal-300 bg-clip-text text-transparent">BuddyBrain</h1>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 font-medium border border-emerald-300 dark:border-emerald-800">
+              100% On-Device Open AI
+            </span>
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Built for a Friend • Hacktoberfest Weekend Challenge</p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        <!-- AI Pipeline Status Indicator -->
+        <div id="aiStatusBadge" class="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-xs text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+          <span id="aiStatusDot" class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+          <span id="aiStatusText">Initializing Transformers.js...</span>
+        </div>
+
+        <!-- Dark Mode Toggle -->
+        <button id="themeToggle" class="p-2 rounded-lg text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+          <i id="themeIcon" class="ph ph-moon text-xl"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-6xl mx-auto px-4 py-8 space-y-8">
+    
+    <!-- Hero / Friend Dedication Banner -->
+    <div class="glass-card rounded-2xl p-6 shadow-sm border border-slate-200/80 dark:border-slate-800/80 relative overflow-hidden">
+      <div class="absolute -right-12 -bottom-12 w-48 h-48 bg-gradient-to-br from-brand-500/10 to-accent-500/10 rounded-full blur-2xl pointer-events-none"></div>
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-1">
+            <i class="ph-bold ph-sparkle"></i>
+            <span>Privacy-First Open-Source Assistant</span>
+          </div>
+          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Helping Overwhelmed Friends Take Action</h2>
+          <p class="text-sm text-slate-600 dark:text-slate-300 mt-1 max-w-2xl">
+            Tired of task paralysis, cognitive overload, or sending your raw personal notes to cloud servers? 
+            BuddyBrain uses <strong>open-source ONNX transformers</strong> running directly in your browser. No API keys, zero cloud tracking, completely free and offline-ready.
+          </p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button id="quickFillDemoBtn" class="text-xs flex items-center space-x-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg transition font-medium border border-slate-200 dark:border-slate-700">
+            <i class="ph ph-lightning text-amber-500"></i>
+            <span>Load Sample Brain Dump</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Navigation Tabs -->
+    <div class="flex border-b border-slate-200 dark:border-slate-800 space-x-6 text-sm font-medium">
+      <button class="tab-btn active pb-3 text-emerald-600 dark:text-emerald-400 border-b-2 border-emerald-500 flex items-center space-x-2" data-tab="deconstructor">
+        <i class="ph ph-lightning-fill"></i>
+        <span>Task Deconstructor & Calmer</span>
+      </button>
+      <button class="tab-btn pb-3 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 flex items-center space-x-2" data-tab="memory">
+        <i class="ph ph-brain"></i>
+        <span>Semantic Memory Index</span>
+      </button>
+      <button class="tab-btn pb-3 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 flex items-center space-x-2" data-tab="companion">
+        <i class="ph ph-chats-circle"></i>
+        <span>AI Buddy Encouragement</span>
+      </button>
+    </div>
+
+    <!-- TAB 1: Task Deconstructor -->
+    <section id="tab-deconstructor" class="space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left Column: Input Form -->
+        <div class="lg:col-span-5 space-y-4">
+          <div class="glass-card rounded-xl p-5 shadow-sm space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="font-semibold text-base flex items-center space-x-2 text-slate-900 dark:text-white">
+                <i class="ph ph-chat-text text-emerald-500 text-lg"></i>
+                <span>Brain Dump Input</span>
+              </h3>
+              <span class="text-xs text-slate-400">Stream of consciousness</span>
+            </div>
+            
+            <textarea id="brainDumpInput" rows="7" placeholder="Dump everything on your mind here... E.g. 'I'm so stressed about tomorrow's presentation, my code has 3 failing tests, I haven't eaten lunch, my desk is messy, and I need to email Sarah back before 5pm.'" class="w-full p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none resize-none transition"></textarea>
+
+            <div class="flex items-center space-x-2">
+              <button id="processDumpBtn" class="flex-1 py-2.5 px-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-medium rounded-lg text-sm shadow-md shadow-emerald-500/20 transition flex items-center justify-center space-x-2">
+                <i class="ph-bold ph-magic-wand"></i>
+                <span>Deconstruct & Calm</span>
+              </button>
+              <button id="clearDumpBtn" class="p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition">
+                <i class="ph ph-trash"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Emotional Temperature Gauge -->
+          <div id="sentimentCard" class="glass-card rounded-xl p-5 shadow-sm space-y-3 hidden">
+            <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center space-x-1.5">
+              <i class="ph ph-heartbeat text-rose-500"></i>
+              <span>Emotional Temperature & Vibe Check</span>
+            </h4>
+            <div class="flex items-center justify-between">
+              <div id="sentimentLabel" class="text-sm font-bold text-slate-800 dark:text-slate-100 capitalize">Neutral</div>
+              <div id="sentimentScore" class="text-xs text-slate-500 font-mono">Confidence: 0%</div>
+            </div>
+            <div class="w-full bg-slate-200 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden">
+              <div id="sentimentBar" class="bg-gradient-to-r from-amber-400 to-emerald-500 h-full rounded-full transition-all duration-500" style="width: 50%"></div>
+            </div>
+            <p id="sentimentAdvice" class="text-xs text-slate-600 dark:text-slate-300 italic pt-1"></p>
+          </div>
+        </div>
+
+        <!-- Right Column: Micro-Action Plan -->
+        <div class="lg:col-span-7 space-y-4">
+          <div class="glass-card rounded-xl p-5 shadow-sm space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="font-semibold text-base flex items-center space-x-2 text-slate-900 dark:text-white">
+                  <i class="ph-bold ph-check-square-offset text-emerald-500"></i>
+                  <span>Step-by-Step Micro-Actions</span>
+                </h3>
+                <p class="text-xs text-slate-500">Deconstructed by local AI to eliminate ADHD task paralysis</p>
+              </div>
+              <span id="taskCountBadge" class="text-xs font-medium px-2.5 py-1 bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 rounded-full">0 Tasks</span>
+            </div>
+
+            <!-- Task List -->
+            <div id="tasksList" class="space-y-2.5 min-h-[220px]">
+              <div class="flex flex-col items-center justify-center h-48 text-center p-6 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
+                <i class="ph ph-sparkle text-3xl text-slate-300 dark:text-slate-600 mb-2"></i>
+                <p class="text-sm font-medium text-slate-500 dark:text-slate-400">No active tasks yet</p>
+                <p class="text-xs text-slate-400 mt-1 max-w-sm">Type a brain dump on the left or click "Load Sample Brain Dump" to see open-source AI turn chaos into simple micro-steps!</p>
+              </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div id="taskProgressSection" class="hidden pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+              <span class="text-slate-500">Progress: <span id="progressPercent" class="font-semibold text-slate-700 dark:text-slate-200">0%</span></span>
+              <button id="clearCompletedTasksBtn" class="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 font-medium">Clear Completed</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 2: Semantic Memory & Note Retrieval -->
+    <section id="tab-memory" class="space-y-6 hidden">
+      <div class="glass-card rounded-xl p-6 shadow-sm space-y-6">
+        <div>
+          <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+            <i class="ph ph-database text-indigo-500"></i>
+            <span>Local Semantic Memory Index</span>
+          </h3>
+          <p class="text-sm text-slate-600 dark:text-slate-300 mt-1">
+            Store snippets, positive reminders, past coding victories, and solutions. When you ask questions, BuddyBrain uses <strong>all-MiniLM-L6-v2 vector embeddings</strong> locally in your browser to calculate cosine similarity — 0% data sent to external servers.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Add Memory -->
+          <div class="space-y-3 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+            <h4 class="font-semibold text-sm text-slate-800 dark:text-slate-200 flex items-center space-x-2">
+              <i class="ph ph-plus-circle text-emerald-500"></i>
+              <span>Save a Memory / Note</span>
+            </h4>
+            <input id="memoryTagInput" type="text" placeholder="Tag (e.g., #wins, #code-fix, #reminder)" class="w-full p-2 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-1 focus:ring-emerald-500 focus:outline-none" />
+            <textarea id="memoryContentInput" rows="3" placeholder="Note content: 'When PostgreSQL connection fails on Windows, check if port 5432 is occupied by old docker container.'" class="w-full p-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-1 focus:ring-emerald-500 focus:outline-none resize-none"></textarea>
+            <button id="saveMemoryBtn" class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg transition flex items-center justify-center space-x-1.5">
+              <i class="ph ph-floppy-disk"></i>
+              <span>Vectorize & Store Locally</span>
+            </button>
+          </div>
+
+          <!-- Semantic Search -->
+          <div class="space-y-3 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+            <h4 class="font-semibold text-sm text-slate-800 dark:text-slate-200 flex items-center space-x-2">
+              <i class="ph ph-magnifying-glass text-indigo-500"></i>
+              <span>Semantic Search (Cosine Distance)</span>
+            </h4>
+            <div class="flex space-x-2">
+              <input id="searchMemoryQuery" type="text" placeholder="Search by meaning... (e.g. 'database connection problem')" class="flex-1 p-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-1 focus:ring-indigo-500 focus:outline-none" />
+              <button id="searchMemoryBtn" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition">
+                <i class="ph ph-arrow-right"></i>
+              </button>
+            </div>
+            <div id="semanticSearchResults" class="space-y-2 text-xs min-h-[100px] max-h-[160px] overflow-y-auto">
+              <div class="text-slate-400 text-center py-6 italic">Enter a query to find semantically relevant memories.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Memory List -->
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="font-semibold text-sm text-slate-800 dark:text-slate-200">Stored Local Notes (<span id="totalMemoriesCount">0</span>)</h4>
+            <button id="seedMemoriesBtn" class="text-xs text-indigo-500 hover:underline">Insert Sample Notes</button>
+          </div>
+          <div id="memoryCardsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 3: AI Buddy Encouragement -->
+    <section id="tab-companion" class="space-y-6 hidden">
+      <div class="glass-card rounded-xl p-6 shadow-sm space-y-6">
+        <div class="flex items-start justify-between">
+          <div>
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+              <i class="ph ph-smiley text-amber-500"></i>
+              <span>AI Buddy Check-In & Encourager</span>
+            </h3>
+            <p class="text-sm text-slate-600 dark:text-slate-300 mt-1">
+              Need a gentle nudge, a warm pep-talk, or guidance without judgment? Choose your friend's preferred tone and get custom encouragement generated locally.
+            </p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 space-y-3">
+            <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Buddy Personality Tone</label>
+            <select id="buddyToneSelect" class="w-full p-2.5 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200">
+              <option value="warm">Warm & Empathetic Friend</option>
+              <option value="coach">Energetic Motivational Coach</option>
+              <option value="calm">Calm & Mindful Stoic</option>
+              <option value="tech">Senior Dev Mentor (Pragmatic)</option>
+            </select>
+
+            <button id="generateBuddyPepTalkBtn" class="w-full py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold rounded-lg text-sm shadow-md shadow-amber-500/20 transition flex items-center justify-center space-x-2">
+              <i class="ph-bold ph-heart"></i>
+              <span>Generate Personalized Pep-Talk</span>
+            </button>
+          </div>
+
+          <div class="md:col-span-2 p-5 rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/50 dark:bg-amber-950/20 space-y-3 flex flex-col justify-center">
+            <div class="flex items-center space-x-2 text-xs font-semibold text-amber-700 dark:text-amber-400">
+              <i class="ph-bold ph-quotes"></i>
+              <span id="buddyToneDisplay">Warm & Empathetic Friend</span>
+            </div>
+            <div id="buddyMessageOutput" class="text-sm md:text-base text-slate-800 dark:text-slate-200 italic leading-relaxed">
+              "Hey friend! Remember that big projects are just a sequence of tiny 5-minute steps. Pick just ONE micro-task, grab a glass of water, and celebrate the small win. You've got this!"
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Challenge Compliance & Tech Stack Section -->
+    <footer class="pt-6 border-t border-slate-200 dark:border-slate-800">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs text-slate-500 dark:text-slate-400">
+        <div class="space-y-1">
+          <div class="font-semibold text-slate-700 dark:text-slate-300">Hacktoberfest Challenge</div>
+          <p>Theme: Build for a Friend</p>
+          <p>Focus: Open-Source AI at core</p>
+        </div>
+        <div class="space-y-1">
+          <div class="font-semibold text-slate-700 dark:text-slate-300">Open-Source AI Engine</div>
+          <p>Xenova/Transformers.js</p>
+          <p>all-MiniLM-L6-v2 Embeddings</p>
+        </div>
+        <div class="space-y-1">
+          <div class="font-semibold text-slate-700 dark:text-slate-300">Privacy Guarantee</div>
+          <p>100% Client/Local Execution</p>
+          <p>Zero third-party API tracking</p>
+        </div>
+        <div class="space-y-1">
+          <div class="font-semibold text-slate-700 dark:text-slate-300">Source & License</div>
+          <p>Open Source (MIT License)</p>
+          <p>Ready for DEV.to Submission</p>
+        </div>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- Application Logic -->
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
