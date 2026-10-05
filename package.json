@@ -1,0 +1,25 @@
+{
+  "name": "buddy-brain",
+  "version": "1.0.0",
+  "description": "A private, local, open-source AI companion and task deconstructor built for a friend.",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "hacktoberfest",
+    "open-source-ai",
+    "transformers",
+    "onnx",
+    "accessibility",
+    "productivity"
+  ],
+  "author": "Mohit Deshwal",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.21.2",
+    "cors": "^2.8.5"
+  }
+}
